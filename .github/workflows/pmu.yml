@@ -1,0 +1,87 @@
+name: PMU Predictor
+
+on:
+  schedule:
+    - cron: "0 9 * * *"           # pronostics du jour (10h en hiver, 11h en été, heure suisse)
+    - cron: "*/15 10-23 * * *"    # vérification des courses terminées
+    - cron: "30 1 * * *"          # nuit : bilan de la veille, collecte, ré-entraînement le lundi
+  workflow_dispatch:
+    inputs:
+      commande:
+        description: "Commande à lancer"
+        type: choice
+        options: [predict, check, nightly, train, test-webhook]
+        default: predict
+
+# Un seul job à la fois : la base SQLite n'est pas partagée entre jobs parallèles.
+concurrency:
+  group: pmu
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      TZ: Europe/Zurich
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Choix de la commande
+        id: cmd
+        run: |
+          case "${{ github.event_name }}:${{ github.event.schedule }}" in
+            "schedule:0 9 * * *")        echo "cmd=predict" >> "$GITHUB_OUTPUT" ;;
+            "schedule:*/15 10-23 * * *") echo "cmd=check"   >> "$GITHUB_OUTPUT" ;;
+            "schedule:30 1 * * *")       echo "cmd=nightly" >> "$GITHUB_OUTPUT" ;;
+            *)                           echo "cmd=${{ inputs.commande }}" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      # La base (data/) et le modèle ré-entraîné (models/) sont conservés dans le cache.
+      - name: Restauration de la base
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            data
+            models
+          key: pmu-db-${{ github.run_id }}
+          restore-keys: pmu-db-
+
+      - name: Première installation (si la base est absente) - ~1 h
+        if: steps.cmd.outputs.cmd != 'test-webhook'
+        run: |
+          if [ ! -f data/pmu.db ]; then
+            python -m pmu.cli collect --days 365
+            python -m pmu.cli train
+          fi
+
+      - name: Exécution
+        run: |
+          case "${{ steps.cmd.outputs.cmd }}" in
+            predict)      python -m pmu.cli predict --notify ;;
+            check)        python -m pmu.cli check ;;
+            train)        python -m pmu.cli train ;;
+            test-webhook) python -m pmu.cli test-webhook ;;
+            nightly)
+              python -m pmu.cli check --date hier
+              python -m pmu.cli collect --days 3
+              if [ "$(date +%u)" = "1" ]; then python -m pmu.cli train; fi
+              ;;
+          esac
+
+      - name: Sauvegarde de la base
+        if: always() && steps.cmd.outputs.cmd != 'test-webhook'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            data
+            models
+          key: pmu-db-${{ github.run_id }}-${{ github.run_attempt }}

@@ -1,0 +1,117 @@
+{
+  "periode_entrainement": [
+    "2025-11-01",
+    "2026-08-23"
+  ],
+  "periode_test": [
+    "2026-08-24",
+    "2026-11-05"
+  ],
+  "test_courses_avec_cotes": {
+    "cotes_brutes_du_matin": {
+      "courses": 2736,
+      "logloss": 1.9992,
+      "top1_gagnant_%": 29.71
+    },
+    "cotes_recalibrees": {
+      "courses": 2736,
+      "logloss": 1.9992,
+      "top1_gagnant_%": 29.71
+    },
+    "modele_avec_cotes": {
+      "courses": 2736,
+      "logloss": 1.9922,
+      "top1_gagnant_%": 29.82
+    }
+  },
+  "test_toutes_courses": {
+    "hasard_uniforme": {
+      "courses": 4280,
+      "logloss": 2.356,
+      "top1_gagnant_%": 10.65
+    },
+    "modele_sans_cotes": {
+      "courses": 4280,
+      "logloss": 2.1098,
+      "top1_gagnant_%": 25.91
+    }
+  },
+  "backtest_modele_avec_cotes": [
+    {
+      "strategie": "1 EUR sur le favori du modele",
+      "paris": 2736,
+      "mise": 2736.0,
+      "retour": 2328.4,
+      "roi_%": -14.9
+    },
+    {
+      "strategie": "value >= 1.0 (p*cote_matin)",
+      "paris": 2689,
+      "mise": 2689.0,
+      "retour": 2440.3,
+      "roi_%": -9.25
+    },
+    {
+      "strategie": "value >= 1.1 (p*cote_matin)",
+      "paris": 854,
+      "mise": 854.0,
+      "retour": 706.8,
+      "roi_%": -17.24
+    },
+    {
+      "strategie": "value >= 1.2 (p*cote_matin)",
+      "paris": 240,
+      "mise": 240.0,
+      "retour": 156.5,
+      "roi_%": -34.79
+    },
+    {
+      "strategie": "value >= 1.3 (p*cote_matin)",
+      "paris": 85,
+      "mise": 85.0,
+      "retour": 35.0,
+      "roi_%": -58.82
+    },
+    {
+      "strategie": "value >= 1.5 (p*cote_matin)",
+      "paris": 6,
+      "mise": 6.0,
+      "retour": 0.0,
+      "roi_%": -100.0
+    }
+  ],
+  "backtest_cotes_seules": [
+    {
+      "strategie": "1 EUR sur le favori du modele",
+      "paris": 2736,
+      "mise": 2736.0,
+      "retour": 2296.3,
+      "roi_%": -16.07
+    }
+  ],
+  "coefficients_modele_avec_cotes": {
+    "lp_odds": 0.8631,
+    "log_gain_par_course": 0.1459,
+    "age": -0.1119,
+    "driver_log_n": 0.1076,
+    "deferre4": 0.0779,
+    "inedit": 0.0572,
+    "wr_carriere": 0.0512,
+    "mus_mean5": 0.0417,
+    "driver_wr": 0.0377,
+    "mus_top3_5": 0.0376,
+    "recul": -0.0376,
+    "oeilleres": -0.0346,
+    "trainer_wr": 0.0319,
+    "pr_carriere": -0.0244,
+    "mus_last": -0.0243,
+    "mus_n": 0.023,
+    "corde_rel": -0.019,
+    "trainer_log_n": 0.0164,
+    "poids_rel": 0.0142,
+    "log_gains_annee": 0.0088,
+    "cheval_driver_wr": 0.0088,
+    "mus_wins5": 0.0074
+  },
+  "entraine_le": "2026-11-05T17:47:05+01:00"
+}
